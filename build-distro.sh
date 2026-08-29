@@ -7,8 +7,13 @@
 #   - Thunderbird (native client, configurable against Office 365 / Exchange)
 #   - KontaktApp (local case-logging tool) pre-installed and on the desktop
 #
-# RUN THIS ON A DEBIAN OR UBUNTU MACHINE (not inside this chat sandbox).
-# It needs sudo and ~10-20GB of free disk space to build.
+# RUN THIS INSIDE AN ACTUAL DEBIAN BOOKWORM ENVIRONMENT — either the
+# "debian:bookworm" Docker image (see .github/workflows/build-iso.yml, which
+# does this automatically) or a real Debian 12 machine/VM. Do NOT run it
+# directly on an Ubuntu host — live-build there mis-detects its own defaults
+# (mirrors, kernel package names, init system, etc) because Ubuntu is a
+# recognised "derivative" to live-build, not because it's unsupported.
+# It needs root and ~10-20GB of free disk space to build.
 #
 # Usage:
 #   sudo ./build-distro.sh
@@ -26,39 +31,15 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
 
-echo "==> Installing prerequisites..."
+echo "==> Installing live-build tooling..."
 apt-get update
-apt-get install -y gnupg curl ca-certificates
-
-echo "==> Fetching current Debian bookworm signing keys..."
-# The debian-archive-keyring package on an Ubuntu build host is Ubuntu's own
-# (stale) build of it and is missing the current bookworm key, which makes
-# debootstrap reject the Release file signature. Pull the real keys straight
-# from ftp-master.debian.org and use them instead.
-curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc -o /tmp/archive-key-12.asc
-curl -fsSL https://ftp-master.debian.org/keys/archive-key-12-security.asc -o /tmp/archive-key-12-security.asc
-cat /tmp/archive-key-12.asc /tmp/archive-key-12-security.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg
-
-echo "==> Installing live-build tooling from Debian bookworm itself..."
-# The live-build/live-config/live-boot packages shipped in Ubuntu 22.04's own
-# repos predate Debian 12/bookworm and don't know its naming conventions
-# (security suite name, casper vs live-boot, kernel package names, etc).
-# Pulling them from Debian's own bookworm repo instead of Ubuntu's avoids
-# that whole class of mismatch.
-echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian-bookworm.list
-apt-get update
-apt-get install -y -t bookworm live-build live-config live-boot debootstrap debian-archive-keyring
+apt-get install -y live-build live-config live-boot debootstrap debian-archive-keyring
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
 echo "==> Configuring live-build (Debian bookworm, XFCE, persistence-ready)..."
-# Explicit Debian mirrors: needed because the build host (e.g. a GitHub
-# Actions Ubuntu runner) may otherwise leak its own Ubuntu mirror settings
-# into the config, which fails since we're building Debian, not Ubuntu.
-# (Kept as one single line on purpose - multi-line backslash continuations
-# are fragile when this file gets edited through GitHub's web editor.)
-lb config --mode debian --distribution bookworm --archive-areas "main contrib non-free non-free-firmware" --architecture amd64 --debian-installer live --binary-images iso-hybrid --iso-application "KontaktUSB" --iso-volume "KONTAKTUSB" --mirror-bootstrap http://deb.debian.org/debian/ --mirror-chroot http://deb.debian.org/debian/ --mirror-chroot-security http://security.debian.org/debian-security/ --mirror-binary http://deb.debian.org/debian/ --mirror-binary-security http://security.debian.org/debian-security/ --keyring-packages debian-archive-keyring --linux-packages "linux-image" --linux-flavours "amd64" --initramfs live-boot --initsystem systemd
+lb config --distribution bookworm --archive-areas "main contrib non-free non-free-firmware" --architecture amd64 --debian-installer live --binary-images iso-hybrid --iso-application "KontaktUSB" --iso-volume "KONTAKTUSB"
 
 mkdir -p config/package-lists
 cat > config/package-lists/desktop.list.chroot <<'EOF'
