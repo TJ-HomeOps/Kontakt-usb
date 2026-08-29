@@ -48,7 +48,7 @@ echo "==> Configuring live-build (Debian bookworm, XFCE, persistence-ready)..."
 # into the config, which fails since we're building Debian, not Ubuntu.
 # (Kept as one single line on purpose - multi-line backslash continuations
 # are fragile when this file gets edited through GitHub's web editor.)
-lb config --distribution bookworm --archive-areas "main contrib non-free non-free-firmware" --architecture amd64 --debian-installer live --binary-images iso-hybrid --iso-application "KontaktUSB" --iso-volume "KONTAKTUSB" --mirror-bootstrap http://deb.debian.org/debian/ --mirror-chroot http://deb.debian.org/debian/ --mirror-chroot-security http://security.debian.org/debian-security/ --mirror-binary http://deb.debian.org/debian/ --mirror-binary-security http://security.debian.org/debian-security/ --keyring-packages debian-archive-keyring --linux-packages "linux-image" --linux-flavours "amd64" --initramfs live-boot
+lb config --distribution bookworm --archive-areas "main contrib non-free non-free-firmware" --architecture amd64 --debian-installer live --binary-images iso-hybrid --iso-application "KontaktUSB" --iso-volume "KONTAKTUSB" --mirror-bootstrap http://deb.debian.org/debian/ --mirror-chroot http://deb.debian.org/debian/ --mirror-chroot-security http://security.debian.org/debian-security/ --mirror-binary http://deb.debian.org/debian/ --mirror-binary-security http://security.debian.org/debian-security/ --keyring-packages debian-archive-keyring --linux-packages "linux-image" --linux-flavours "amd64" --initramfs live-boot --initsystem systemd
 
 mkdir -p config/package-lists
 cat > config/package-lists/desktop.list.chroot <<'EOF'
