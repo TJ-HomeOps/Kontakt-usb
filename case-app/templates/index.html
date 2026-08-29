@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Sager <span class="badge bg-secondary">{{ open_count }} åbne</span></h4>
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('export_csv') }}">Eksporter CSV</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto">
+    <input class="form-control form-control-sm" type="text" name="q" placeholder="Søg..." value="{{ query }}">
+  </div>
+  <div class="col-auto">
+    <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+      <option value="">Alle statusser</option>
+      {% for s in statuses %}
+        <option value="{{ s }}" {% if status_filter==s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-sm btn-primary" type="submit">Søg</button>
+  </div>
+</form>
+
+<table class="table table-sm table-hover align-middle">
+  <thead>
+    <tr>
+      <th>Sagsnr.</th>
+      <th>Oprettet</th>
+      <th>Emne</th>
+      <th>Kontakt</th>
+      <th>Kategori</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in cases %}
+    <tr onclick="window.location='{{ url_for('view_case', case_id=c['id']) }}'" style="cursor:pointer">
+      <td><strong>{{ c['case_number'] }}</strong></td>
+      <td>{{ c['created_at'][:16].replace('T',' ') }}</td>
+      <td>{{ c['title'] }}</td>
+      <td>{{ c['contact_name'] }}</td>
+      <td>{{ c['category'] }}</td>
+      <td>
+        <span class="badge
+          {% if c['status'] == 'Åben' %}bg-danger
+          {% elif c['status'] == 'Under behandling' %}bg-warning text-dark
+          {% else %}bg-success{% endif %}">
+          {{ c['status'] }}
+        </span>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-muted">Ingen sager fundet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

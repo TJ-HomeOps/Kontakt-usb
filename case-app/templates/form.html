@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="mb-3">
+  {% if case %}Sag {{ case['case_number'] }}{% else %}Ny sag{% endif %}
+</h4>
+
+<form method="post">
+  <div class="row g-3">
+    <div class="col-md-8">
+      <label class="form-label">Emne</label>
+      <input class="form-control" name="title" required value="{{ case['title'] if case else '' }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Kategori</label>
+      <select class="form-select" name="category">
+        {% for cat in categories %}
+          <option {% if case and case['category']==cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Kontaktperson</label>
+      <input class="form-control" name="contact_name" value="{{ case['contact_name'] if case else '' }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Telefon</label>
+      <input class="form-control" name="contact_phone" value="{{ case['contact_phone'] if case else '' }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">E-mail</label>
+      <input class="form-control" name="contact_email" value="{{ case['contact_email'] if case else '' }}">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Sted</label>
+      <input class="form-control" name="location" value="{{ case['location'] if case else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Status</label>
+      <select class="form-select" name="status">
+        {% for s in statuses %}
+          <option {% if case and case['status']==s %}selected{% elif not case and s=='Åben' %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Opfølgningsdato</label>
+      <input type="date" class="form-control" name="follow_up_date" value="{{ case['follow_up_date'] if case else '' }}">
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Beskrivelse</label>
+      <textarea class="form-control" name="description" rows="4">{{ case['description'] if case else '' }}</textarea>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Handling / noter</label>
+      <textarea class="form-control" name="actions_taken" rows="4">{{ case['actions_taken'] if case else '' }}</textarea>
+    </div>
+  </div>
+
+  <div class="mt-4 d-flex justify-content-between">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Tilbage</a>
+    <div>
+      {% if case %}
+      <button class="btn btn-outline-danger" type="submit" formaction="{{ url_for('delete_case', case_id=case['id']) }}"
+        onclick="return confirm('Slet denne sag permanent?')">Slet</button>
+      {% endif %}
+      <button class="btn btn-primary" type="submit">Gem</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
