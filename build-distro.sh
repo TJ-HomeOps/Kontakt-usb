@@ -28,7 +28,16 @@ BUILD_DIR="${SCRIPT_DIR}/build"
 
 echo "==> Installing live-build tooling..."
 apt-get update
-apt-get install -y live-build live-config live-boot debootstrap debian-archive-keyring
+apt-get install -y live-build live-config live-boot debootstrap debian-archive-keyring gnupg curl
+
+echo "==> Fetching current Debian bookworm signing keys..."
+# The debian-archive-keyring package on an Ubuntu build host is Ubuntu's own
+# (stale) build of it and is missing the current bookworm key, which makes
+# debootstrap reject the Release file signature. Pull the real keys straight
+# from ftp-master.debian.org and use them instead.
+curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc -o /tmp/archive-key-12.asc
+curl -fsSL https://ftp-master.debian.org/keys/archive-key-12-security.asc -o /tmp/archive-key-12-security.asc
+cat /tmp/archive-key-12.asc /tmp/archive-key-12-security.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
