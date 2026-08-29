@@ -26,9 +26,9 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
 
-echo "==> Installing live-build tooling..."
+echo "==> Installing prerequisites..."
 apt-get update
-apt-get install -y live-build live-config live-boot debootstrap debian-archive-keyring gnupg curl
+apt-get install -y gnupg curl ca-certificates
 
 echo "==> Fetching current Debian bookworm signing keys..."
 # The debian-archive-keyring package on an Ubuntu build host is Ubuntu's own
@@ -38,6 +38,16 @@ echo "==> Fetching current Debian bookworm signing keys..."
 curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc -o /tmp/archive-key-12.asc
 curl -fsSL https://ftp-master.debian.org/keys/archive-key-12-security.asc -o /tmp/archive-key-12-security.asc
 cat /tmp/archive-key-12.asc /tmp/archive-key-12-security.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg
+
+echo "==> Installing live-build tooling from Debian bookworm itself..."
+# The live-build/live-config/live-boot packages shipped in Ubuntu 22.04's own
+# repos predate Debian 12/bookworm and don't know its naming conventions
+# (security suite name, casper vs live-boot, kernel package names, etc).
+# Pulling them from Debian's own bookworm repo instead of Ubuntu's avoids
+# that whole class of mismatch.
+echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian-bookworm.list
+apt-get update
+apt-get install -y -t bookworm live-build live-config live-boot debootstrap debian-archive-keyring
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
