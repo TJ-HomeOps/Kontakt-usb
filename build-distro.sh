@@ -28,7 +28,7 @@ BUILD_DIR="${SCRIPT_DIR}/build"
 
 echo "==> Installing live-build tooling..."
 apt-get update
-apt-get install -y live-build live-config live-boot debootstrap
+apt-get install -y live-build live-config live-boot debootstrap debian-archive-keyring
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
@@ -41,7 +41,12 @@ lb config \
   --debian-installer live \
   --binary-images iso-hybrid \
   --iso-application "KontaktUSB" \
-  --iso-volume "KONTAKTUSB"
+  --iso-volume "KONTAKTUSB" \
+  --mirror-bootstrap http://deb.debian.org/debian/ \ 
+  --mirror-binary http://deb.debian.org/debian/ \ 
+  --mirror-security http://security.debian.org/debian-security/ \ 
+  --mirror-binary-security http://security.debian.org/debian-security/ \ 
+  --keyring-packages debian-archive-keyring
 
 mkdir -p config/package-lists
 cat > config/package-lists/desktop.list.chroot <<'EOF'
