@@ -34,19 +34,12 @@ mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
 echo "==> Configuring live-build (Debian bookworm, XFCE, persistence-ready)..."
-lb config \
-  --distribution bookworm \
-  --archive-areas "main contrib non-free non-free-firmware" \
-  --architecture amd64 \
-  --debian-installer live \
-  --binary-images iso-hybrid \
-  --iso-application "KontaktUSB" \
-  --iso-volume "KONTAKTUSB" \
-  --mirror-bootstrap http://deb.debian.org/debian/ \ 
-  --mirror-binary http://deb.debian.org/debian/ \ 
-  --mirror-security http://security.debian.org/debian-security/ \ 
-  --mirror-binary-security http://security.debian.org/debian-security/ \ 
-  --keyring-packages debian-archive-keyring
+# Explicit Debian mirrors: needed because the build host (e.g. a GitHub
+# Actions Ubuntu runner) may otherwise leak its own Ubuntu mirror settings
+# into the config, which fails since we're building Debian, not Ubuntu.
+# (Kept as one single line on purpose - multi-line backslash continuations
+# are fragile when this file gets edited through GitHub's web editor.)
+lb config --distribution bookworm --archive-areas "main contrib non-free non-free-firmware" --architecture amd64 --debian-installer live --binary-images iso-hybrid --iso-application "KontaktUSB" --iso-volume "KONTAKTUSB" --mirror-bootstrap http://deb.debian.org/debian/ --mirror-binary http://deb.debian.org/debian/ --mirror-security http://security.debian.org/debian-security/ --mirror-binary-security http://security.debian.org/debian-security/ --keyring-packages debian-archive-keyring
 
 mkdir -p config/package-lists
 cat > config/package-lists/desktop.list.chroot <<'EOF'
